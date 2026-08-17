@@ -1,0 +1,69 @@
+/* Startup-launch row: same outer rhythm as the sibling General-section rows. */
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--dsw-alias-border-l2);
+}
+
+.rowText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  color: var(--dsw-alias-label-primary);
+}
+
+.desc {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.saved {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-state-success-primary);
+}
+
+.modes {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.input {
+  accent-color: var(--dsw-alias-brand-primary);
+}
+
+.modeLabel {
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-primary);
+}
+
+.hint {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.unavailable {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+}
