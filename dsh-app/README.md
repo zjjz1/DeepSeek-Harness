@@ -1,4 +1,4 @@
-# dsh-app — Electron 桌面壳层
+﻿# dsh-app — Electron 桌面壳层
 
 DeepSeek Harness 桌面端的 Electron 启动器（无边框沉浸式窗口）。
 
@@ -30,4 +30,4 @@ build.bat        # 管理员权限（NSIS 符号链接）
 
 产物：`dist/DeepSeek Harness Setup 0.1.0.exe`
 
-> `package.json` 的 `build.extraResources` 从 `C:/Users/31773/Desktop/deepseek-harness` 取 harness 源码，构建前请改为本地 harness 路径（需先应用 `harness-patches/` 并构建插件 `lib/`）。
+> `package.json` 的 `build.extraResources` 从 `../测试脚本与打包资源/deepseek-harness` 取 harness 源码，构建前请改为本地 harness 路径（需先应用 `harness-patches/` 并构建插件 `lib/`）。
