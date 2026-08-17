@@ -1,0 +1,26 @@
+# Node
+node_modules/
+*.tsbuildinfo
+
+# Build output
+dist/
+build/app-stage/
+
+# Logs & local artifacts
+*.log
+*.bak
+build-output.log
+sync-to-packsource.log
+app.asar.pre-pack.bak
+
+# Local tools / internal docs (may contain credentials)
+tools/
+backup-*/
+Step*.ps1
+Build*.ps1
+DiagnoseService.bat
+交接文档*.md
+
+# OS
+Thumbs.db
+.DS_Store
