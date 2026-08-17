@@ -1,0 +1,387 @@
+/* Statistics modal (same overlay/mask/panel family as the Settings shell):
+   full-viewport mask + centered panel with a 54px header row and a body. */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mask {
+  position: absolute;
+  inset: 0;
+  background: var(--dsw-alias-bg-mask-1);
+  backdrop-filter: var(--dsw-mask-blur);
+}
+
+.panel {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: min(1080px, calc(100vw - 48px));
+  height: min(700px, calc(100vh - 48px));
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--dsw-alias-bg-layer-2);
+  box-shadow: var(--dsw-shadow-lv3);
+}
+
+.header {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 54px;
+  padding: 0 14px 0 20px;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--dsw-alias-border-l1);
+}
+
+.title {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  color: var(--dsw-alias-label-primary);
+}
+
+.ranges {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+}
+
+.range {
+  padding: 4px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  line-height: 18px;
+  cursor: pointer;
+}
+
+.range:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.range[aria-selected='true'] {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+  font-weight: 500;
+}
+
+.close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-left: auto;
+  padding: 0;
+  border: none;
+  border-radius: 28px;
+  background: transparent;
+  cursor: pointer;
+  color: var(--dsw-alias-label-primary);
+}
+
+.close:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 20px 20px;
+  overflow-y: auto;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: auto;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.retry {
+  padding: 3px 10px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.retry:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 10px;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: 12px;
+  background: var(--dsw-alias-bg-layer-1);
+}
+
+.cardValue {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 28px;
+  color: var(--dsw-alias-label-primary);
+}
+
+.cardLabel {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.chartHead,
+.sessionsHead {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.chartTitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--dsw-alias-label-primary);
+}
+
+.chartLegend {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.chartPeak {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.legendInput {
+  /* 输入段图例：与柱段一致，较浅的蓝色 #93b2f5 */
+  background: #93b2f5;
+}
+
+.legendOutput {
+  /* 输出段颜色：绿色 → 蓝色 #4e80ee（用户指定），与柱段一致 */
+  background: #4e80ee;
+}
+
+.peakHint {
+  margin-left: auto;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.chart {
+  display: flex;
+  /* stretch（默认）：柱列撑满图表高度，barStack 的 flex:1 才有真实空间，
+     height 百分比才能解析——flex-end 会让柱列高度塌缩为内容高度，
+     所有柱子变成 2px 扁条。 */
+  align-items: stretch;
+  gap: 4px;
+  /* 图表纵向拉高：150px → 200px（用户要求） */
+  height: 200px;
+  padding: 8px 4px 0;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: 12px;
+  overflow-x: auto;
+  background: var(--dsw-alias-bg-layer-1);
+}
+
+.barCol {
+  /* 46px 列宽容纳 15px 的时间标签（"MM-DD"/"HH:00" 完整显示），25px 柱在其中居中 */
+  flex: 1 0 46px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  /* 显式撑满：flex 容器高度确定（.chart height:200px），百分比/剩余空间
+     才能正确分配给 barStack。 */
+  height: 100%;
+}
+
+.barStack {
+  flex: 1;
+  min-height: 0;
+  /* 柱宽：18px → 25px（用户要求再加粗） */
+  width: 25px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 1px;
+}
+
+.bar {
+  width: 100%;
+  border-radius: 2px;
+  min-height: 2px;
+}
+
+.barInput {
+  /* 输入段颜色：品牌色 → 较浅的蓝色 #93b2f5（用户要求，与输出 #4e80ee 同色相、更亮） */
+  background: #93b2f5;
+}
+
+.barOutput {
+  /* 输出段颜色：绿色 → 蓝色 #4e80ee（用户指定） */
+  background: #4e80ee;
+}
+
+.barLabel {
+  max-width: 100%;
+  overflow: hidden;
+  /* 时间标签再调大 3px：12px → 15px（保留 500 字重） */
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--dsw-alias-label-tertiary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Hover tooltip over the chart: fixed-positioned so it escapes the chart's
+   overflow clipping and overlays the whole modal; pointer-events: none so it
+   never blocks the cursor. Its width adapts to the content (long token
+   numbers just widen it). Transitions activate via .tipSettled only after the
+   first placement, so the initial show never slides in from a corner; between
+   bars the left/top transition glides it smoothly while it stays mounted. */
+.tip {
+  position: fixed;
+  z-index: 2000;
+  max-width: 320px;
+  overflow: hidden;
+  padding: 8px 12px;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: 10px;
+  background: var(--dsw-alias-bg-layer-2);
+  box-shadow: var(--dsw-shadow-lv2);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.tipSettled {
+  transition:
+    left 0.18s var(--ds-ease-out, cubic-bezier(0.22, 1, 0.36, 1)),
+    top 0.18s var(--ds-ease-out, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+.tipTitle {
+  margin-bottom: 5px;
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 600;
+  color: var(--dsw-alias-label-primary);
+}
+
+.tipRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+  font-size: 11px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.tipRow b {
+  font-weight: 600;
+  color: var(--dsw-alias-label-primary);
+}
+
+.table {
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.tableRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--dsw-alias-border-l1);
+  /* 会话标题与数字列再加大 3px：13px → 16px */
+  font-size: 16px;
+  line-height: 22px;
+}
+
+.tableRow:last-child {
+  border-bottom: none;
+}
+
+.tableHead {
+  background: var(--dsw-alias-bg-layer-1);
+  font-weight: 500;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.colSession {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--dsw-alias-label-primary);
+}
+
+.colNum {
+  flex: none;
+  width: 84px;
+  text-align: right;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.hiddenLabel {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
