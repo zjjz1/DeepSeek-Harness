@@ -96,7 +96,7 @@
 
 前往 **Releases** 下载最新安装包：
 
-- **`DeepSeek Harness Setup 0.1.0.exe`**（约 163 MB，Windows x64）
+- **`DeepSeek.Harness.Setup.0.1.0.exe`**（约 163 MB，Windows x64；GitHub 将文件名中的空格自动转为点号，本地产物原名 `DeepSeek Harness Setup 0.1.0.exe`）
 
 安装说明：
 
