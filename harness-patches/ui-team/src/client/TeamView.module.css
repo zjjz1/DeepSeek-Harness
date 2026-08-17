@@ -1,0 +1,240 @@
+/* Team view: status strip + horizontally resizable panes.
+   Each pane renders default-chat-style bubbles (MarkdownText), scrolls
+   independently, and has no composer input. */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  gap: 8px;
+  padding: 8px 12px 12px;
+  overflow: hidden;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: none;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.statusActive {
+  color: var(--dsw-alias-state-success-primary);
+}
+
+.statusActive::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: team-pulse 1.4s ease-in-out infinite;
+}
+
+.statusInactive {
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.panes {
+  display: grid;
+  flex: 1;
+  min-height: 0;
+  gap: 0;
+  overflow: hidden;
+}
+
+.paneWrap {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pane {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: 10px;
+  background: var(--dsw-alias-bg-layer-2);
+}
+
+.paneHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex: none;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--dsw-alias-border-l1);
+}
+
+.paneTitle {
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.paneSelect {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 55%;
+  overflow: hidden;
+  padding: 0 6px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.paneSelect:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.paneSelectCaret {
+  flex: none;
+  font-size: 10px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+/* Independent scroll: the body is the only scroll container of its pane. */
+.paneBody {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 12px;
+}
+
+.empty {
+  padding: 24px 8px;
+  text-align: center;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+/* Message row: meta line + bubble, mirroring the default chat rhythm. */
+.message {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 12px;
+  animation: team-in 0.18s ease-out;
+}
+
+.messageMeta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.role {
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--dsw-alias-label-caption);
+}
+
+.time {
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+/* Bubble: default-chat alignment (user right, assistant left). */
+.bubble {
+  max-width: 94%;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-primary);
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.message[data-role='user'] {
+  align-items: flex-end;
+}
+
+.message[data-role='user'] .bubble {
+  background: var(--dsw-specific-bubble);
+  border-bottom-right-radius: 3px;
+}
+
+.message[data-role='assistant'] .bubble {
+  background: var(--dsw-specific-bubble-highlight);
+  border-bottom-left-radius: 3px;
+}
+
+.message[data-role='tool'] .bubble,
+.message[data-role='notice'] .bubble {
+  background: var(--dsw-alias-interactive-bg-hover);
+  border-bottom-left-radius: 3px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+/* MarkdownText output inside a bubble: keep tables/code from overflowing
+   the pane, and let paragraphs breathe like the default chat. */
+.bubble pre {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* Divider: sits at the LEFT edge of pane `index`, resizing pane `index - 1`. */
+.divider {
+  position: absolute;
+  left: -5px;
+  top: 0;
+  bottom: 0;
+  z-index: 3;
+  width: 10px;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2px;
+  height: 32px;
+  transform: translate(-50%, -50%);
+  border-radius: 2px;
+  background: transparent;
+}
+
+.divider:hover::after,
+.divider:active::after {
+  background: var(--dsw-alias-border-l3);
+}
+
+@keyframes team-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+
+@keyframes team-in {
+  from { opacity: 0; transform: translateY(2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
