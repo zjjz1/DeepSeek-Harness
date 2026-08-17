@@ -113,11 +113,26 @@ function getSystemNode() {
   return fs.existsSync(SYSTEM_NODE) ? SYSTEM_NODE : '';
 }
 
+// 依赖完整性校验：node_modules 目录存在只证明“开始过安装”——首次安装若被
+// 中断会留下半成品（.pnpm 建了但 workspace 链接与 BASEAI 闭包缺失），
+// 此时跳过安装直接启服务必然崩溃（“服务已中断”事故根因）。必须校验运行时
+// 关键闭包：根 @deepseek-ai、apps/cli 闭包、bundle/base 的 BASEAI 闭包。
+function depsComplete(harnessDir) {
+  const probe = (dir) => {
+    try {
+      return fs.existsSync(dir) && fs.readdirSync(dir).length > 0;
+    } catch (e) { return false; }
+  };
+  return probe(path.join(harnessDir, 'node_modules', '@deepseek-ai'))
+    && probe(path.join(harnessDir, 'apps', 'cli', 'node_modules', '@deepseek-ai'))
+    && probe(path.join(harnessDir, 'packages', 'bundle', 'base', 'node_modules', '@deepseek-ai'));
+}
+
 // 首启（或依赖缺失）时：确保 Node.js 环境 → 用 pnpm 安装 harness 依赖（直连官方源 + 超时保护）
 function ensureHarnessDeps() {
   return new Promise(async (resolve) => {
     const harnessDir = resolveHarnessDir();
-    if (fs.existsSync(path.join(harnessDir, 'node_modules'))) { resolve(true); return; }
+    if (depsComplete(harnessDir)) { resolve(true); return; }
     if (fs.existsSync(path.join(harnessDir, DEPS_MARKER))) { resolve(true); return; }
     if (!app.isPackaged) { resolve(true); return; }  // 开发态：直接用现有 node_modules
 
@@ -176,7 +191,8 @@ function cancelNodeInstall() {
   setInitStatus('error', '未安装 Node.js 运行环境，本应用无法运行。');
 }
 
-// 用系统 Node + 随包 pnpm 安装依赖：直连官方源，请求级超时 + 停滞检测
+// 用系统 Node + 随包 pnpm 安装依赖：直连官方源优先，失败自动回退 npmmirror；
+// 请求级超时 + 停滞检测。半成品 node_modules 会被 depsComplete 识破并续装。
 function installDeps(harnessDir, resolve, nodeInfo) {
   // 先把检测结果亮出来，确认“自动检测”生效
   setInitStatus('installing', nodeInfo && nodeInfo.version
@@ -203,8 +219,14 @@ function installDeps(harnessDir, resolve, nodeInfo) {
   }
 
   const pnpm = path.join(process.resourcesPath, 'pnpm', 'bin', 'pnpm.cjs');
-  // 直连官方源（不加 registry 参数）；单次请求 30s 超时；append-only 输出便于解析进度
+  // 官方源失败后回退 npmmirror（国内网络官方源可能超时/不稳）
+  runPnpmInstall(nodeExe, pnpm, harnessDir, resolve, nodeInfo, null);
+}
+
+// 执行一次 pnpm install（registry 为空 = 官方源；失败未重试过 → 回退 npmmirror 重试）
+function runPnpmInstall(nodeExe, pnpm, harnessDir, resolve, nodeInfo, registry) {
   const installArgs = [pnpm, 'install', '--reporter=append-only', '--fetch-timeout=30000'];
+  if (registry) installArgs.push('--registry', registry);
   const child = spawn(nodeExe, installArgs, {
     cwd: harnessDir,
     windowsHide: true,
@@ -213,6 +235,7 @@ function installDeps(harnessDir, resolve, nodeInfo) {
   });
 
   let finished = false;
+  let retried = false;
   let stallTimer = null;
 
   const finish = (ok, msg) => {
@@ -259,6 +282,12 @@ function installDeps(harnessDir, resolve, nodeInfo) {
   child.on('error', () => finish(false, '无法启动安装程序，请重新打开本应用'));
   child.on('exit', (code) => {
     if (code === 0) { finish(true, ''); return; }
+    // 官方源安装失败 → 自动回退 npmmirror 重试一次（国内网络官方源常不稳）
+    if (!registry && !retried) {
+      retried = true;
+      runPnpmInstall(nodeExe, pnpm, harnessDir, resolve, nodeInfo, 'https://registry.npmmirror.com/');
+      return;
+    }
     let msg = '运行组件下载失败，请检查网络后重新打开本应用';
     // 识别权限类报错（EPERM / EACCES），给出可操作的提示而不是笼统的“网络问题”
     if (/EPERM|EACCES|permission denied|access is denied/i.test(errText)) {
